@@ -26,11 +26,17 @@ func NewPlayer(gameWorld IGameWorld, velocityHandler components.IVelocityHandler
         constants.PlayerFriction))
 
     return &Player {
-        hitbox: rl.NewRectangle(100, 200, 50, 100),
+        hitbox: rl.NewRectangle(100, 200, constants.PlayerHitboxWidth, constants.PlayerHitboxHeight),
         velocityHandler: velocityHandler,
 
         gameWorld: gameWorld,
     }
+}
+
+func (player *Player) GetHitboxCenter() rl.Vector2 {
+    return rl.NewVector2(
+        player.hitbox.X + player.hitbox.Width/2,
+        player.hitbox.Y + player.hitbox.Height/2)
 }
 
 func (player *Player) Update() {
@@ -69,6 +75,13 @@ func (player *Player) updatePhysics() {
 func (player *Player) handleInput() {
     player.handleWalk()
     player.handleJump()
+    player.handleAbilities()
+
+}
+func (player *Player) handleAbilities() {
+    if rl.IsKeyPressed(rl.KeyR) {
+        player.gameWorld.ToggleTimePeriod()
+    }
 }
 
 func (player *Player) handleJump() {
@@ -108,7 +121,9 @@ func (player *Player) handleGravity() {
     }
 }
 
-// Would say "is touching grass", but let's be honest... Gamers don't touch grass..
+// Would say "is touching grass", but let's be honest... Gamers don't touch grass..play
 func (player *Player) isTouchingGround() bool {
-    return player.hitbox.Y + player.hitbox.Height >= float32(player.gameWorld.GetFloorHeight(player.hitbox.X))
+    floorLeeway := float32(20)
+
+    return player.hitbox.Y + player.hitbox.Height >= float32(player.gameWorld.GetFloorHeight(player.hitbox.X)) - floorLeeway
 }
